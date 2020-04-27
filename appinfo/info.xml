@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<info xmlns:xsi= "http://www.w3.org/2001/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="https://apps.nextcloud.com/schema/apps/info.xsd">
+    <id>files_external_ipfs</id>
+    <name>Files IPFS</name>
+    <summary>IPFS Backend for file storage</summary>
+    <description><![CDATA[IPFS Backend for file storage]]></description>
+    <version>0.0.1</version>
+    <types>
+        <filesystem/>
+    </types>
+    <licence>agpl</licence>
+    <author mail="carlo.meier@mail.ch" homepage="https://carlomeier.net">Carlo Meier</author>
+    <namespace>Files_External_IPFS</namespace>
+    <category>files</category>
+    <category>integration</category>
+    <bugs>https://github.com/justicenode/files_external_ipfs/issues</bugs>
+    <dependencies>
+        <nextcloud min-version="15" max-version="18"/>
+    </dependencies>
+</info>
