@@ -1,7 +1,4 @@
 <?php
-/**
- * @author Carlo Meier <carlo.meier@mail.ch>
- */
 
 namespace OCA\Files_External_IPFS\Storage;
 
@@ -9,6 +6,11 @@ use League\Flysystem\FileNotFoundException;
 use OC\Files\Storage\Flysystem;
 use OC\Files\Storage\PolyFill\CopyDirectory;
 
+/**
+ * Class IPFS
+ * @package OCA\Files_External_IPFS\Storage
+ * @author V31L <veil@mail.ch>
+ */
 class IPFS extends Flysystem {
 	use CopyDirectory;
 
@@ -33,10 +35,6 @@ class IPFS extends Flysystem {
 
 	public static function checkDependencies() {
 		$deps = [];
-		//TODO: /api/v0/version
-
-		if (!function_exists('ftp_login')) $deps[] = 'ftp';
-
 		return count($deps) == 0 ? true : $deps;
 	}
 

@@ -1,12 +1,15 @@
 <?php
 
-
 namespace OCA\Files_External_IPFS\Storage;
-
 
 use League\Flysystem\Adapter\AbstractAdapter;
 use League\Flysystem\Config;
 
+/**
+ * Class Adapter
+ * @package OCA\Files_External_IPFS\Storage
+ * @author V31L <veil@mail.ch>
+ */
 class Adapter extends AbstractAdapter {
 	private $host;
 
@@ -14,6 +17,13 @@ class Adapter extends AbstractAdapter {
 		$this->host = $host;
 	}
 
+	/**
+	 * @param string $method GET, POST, PUT
+	 * @param string $url url of api to call
+	 * @param array $params
+	 * @param array $data
+	 * @return bool|string
+	 */
 	private function callAPI(string $method, string $url, array $params = [], array $data = []) {
 		$curl = curl_init();
 
@@ -38,6 +48,11 @@ class Adapter extends AbstractAdapter {
 		return $result;
 	}
 
+	/**
+	 * @param array $entry entry from IPFS api
+	 * @param bool|string $root (optional) root if its for a directory
+	 * @return array normalized file data
+	 */
 	private function normalizeFile(array $entry, $root = false) {
 		return [
 			'type' => $root ? ($entry['Type'] == 0 ? 'dir' : 'file') : ($entry['Type'] == 'file' ? 'file' : 'dir'),
@@ -47,6 +62,13 @@ class Adapter extends AbstractAdapter {
 		];
 	}
 
+	/**
+	 * Uploads a file to IPFS
+	 * @param string $path the destination path of the file
+	 * @param string $contents the file contents to be uploaded
+	 * @param bool $append if true it appends the content instead of replacing it
+	 * @return array|bool metadata of false if the operation failed
+	 */
 	private function upload(string $path, string $contents, $append = false) {
 		$args = ['arg' => "/{$path}", 'create' => true];
 		if ($append) {
@@ -60,7 +82,12 @@ class Adapter extends AbstractAdapter {
 		return $this->getMetadata($path);
 	}
 
-	private function download($path) {
+	/**
+	 * downloads a file via the IPFS API
+	 * @param string $path path of the file
+	 * @return bool|string returns contents of files or false if it failed
+	 */
+	private function download(string $path) {
 		return $this->callAPI('GET', '/files/read', ['arg' => "/$path"]);
 	}
 
@@ -163,26 +190,39 @@ class Adapter extends AbstractAdapter {
 	public function rename($path, $newpath) {
 		$args = '?arg=' . urlencode("/{$path}") . '&arg=' . urlencode("/{$newpath}");
 		$response = $this->callAPI('GET', '/files/mv' . $args);
-		if ($response != '') return false;
-		return true;
+		return $response == '';
 	}
 
+	/**
+	 * {@inheritdoc}
+	 */
 	public function copy($path, $newpath) {
-		//TODO
+		$args = '?arg=' . urlencode("/{$path}") . '&arg=' . urlencode("/{$newpath}");
+		$response = $this->callAPI('GET', '/files/cp' . $args);
+		return $response == '';
 	}
 
+	/**
+	 * {@inheritdoc}
+	 */
 	public function delete($path) {
 		$response = $this->callAPI('GET', '/files/rm', ['arg' => "/$path"]);
-		return true; //TODO: give error response if needed
+		return $response == '';
 	}
 
+	/**
+	 * {@inheritdoc}
+	 */
 	public function deleteDir($dirname) {
 		return $this->delete($dirname);
 	}
 
+	/**
+	 * {@inheritdoc}
+	 */
 	public function createDir($dirname, Config $config) {
 		$response = $this->callAPI('GET', '/files/mkdir', ['arg' => "/$dirname", 'parent' => true]);
-		return true;//TODO: give error response if needed
+		return $response == '';
 	}
 
 	public function setVisibility($path, $visibility) {

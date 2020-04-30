@@ -1,7 +1,4 @@
 <?php
-/**
- * @author Carlo Meier <carlo.meier@mail.ch>
- */
 
 namespace OCA\Files_External_IPFS\Backend;
 
@@ -12,6 +9,11 @@ use OCA\Files_External\Lib\Auth\AuthMechanism;
 use OCA\Files_External\Lib\LegacyDependencyCheckPolyfill;
 use OCA\Files_External\Lib\Auth\Password\Password;
 
+/**
+ * Class IPFS
+ * @package OCA\Files_External_IPFS\Backend
+ * @author V31L <veil@mail.ch>
+ */
 class IPFS extends Backend {
 	use LegacyDependencyCheckPolyfill;
 
