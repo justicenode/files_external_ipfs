@@ -173,7 +173,7 @@ class Adapter extends AbstractAdapter {
 
 	public function delete($path) {
 		$response = $this->callAPI('GET', '/files/rm', ['arg' => "/$path"]);
-		return false; //TODO
+		return true; //TODO: give error response if needed
 	}
 
 	public function deleteDir($dirname) {
