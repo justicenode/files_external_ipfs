@@ -23,7 +23,7 @@ class IPFS extends Flysystem {
 			$this->root = isset($params['root']) ? "/{$params['root']}" : '/';
 			$this->api = $params['host'];
 
-			$this->adapter = new Adapter($this->api);
+			$this->adapter = new Adapter($this->api, $this->root);
 			$this->buildFlySystem($this->adapter);
 		} else {
 			throw new \Exception('Creating \OCA\Files_External_IPFS\IPFS storage failed');

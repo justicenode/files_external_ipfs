@@ -13,8 +13,15 @@ use League\Flysystem\Config;
 class Adapter extends AbstractAdapter {
 	private $host;
 
-	public function __construct(string $host) {
+	public function __construct(string $host, string $root) {
 		$this->host = $host;
+
+		// Ensure the existence of the root directory
+		$root = ltrim($root, '/');
+		if(!$this->has($root)) {
+			if(!$this->mkdir($root))
+				throw new \Exception('root directory didnt exist and couldnt be created');
+		}
 	}
 
 	/**
@@ -46,6 +53,15 @@ class Adapter extends AbstractAdapter {
 		curl_close($curl);
 
 		return $result;
+	}
+
+	/**
+	 * @param string $dirname location of new directory
+	 * @return bool success status
+	 */
+	private function mkdir($dirname) {
+		$response = $this->callAPI('GET', '/files/mkdir', ['arg' => "/$dirname", 'parent' => true]);
+		return $response == '';
 	}
 
 	/**
@@ -221,8 +237,7 @@ class Adapter extends AbstractAdapter {
 	 * {@inheritdoc}
 	 */
 	public function createDir($dirname, Config $config) {
-		$response = $this->callAPI('GET', '/files/mkdir', ['arg' => "/$dirname", 'parent' => true]);
-		return $response == '';
+		return $this->mkdir($dirname);
 	}
 
 	public function setVisibility($path, $visibility) {

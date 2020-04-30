@@ -5,7 +5,7 @@
     <name>Files IPFS</name>
     <summary>IPFS Backend for file storage</summary>
     <description><![CDATA[IPFS Backend for file storage]]></description>
-    <version>0.0.1</version>
+    <version>0.1.0</version>
     <types>
         <filesystem/>
     </types>
