@@ -15,7 +15,6 @@ class IPFS extends Flysystem {
 	use CopyDirectory;
 
 	private $adapter, $api;
-	protected $baseDir;
 	protected $root;
 
 	public function __construct($params) {
@@ -33,12 +32,16 @@ class IPFS extends Flysystem {
 	public function __destruct() {
 	}
 
+	/**
+	 * Check for dependencies (as of now none)
+	 * @return array|bool array of missing dependencies or true
+	 */
 	public static function checkDependencies() {
 		$deps = [];
 		return count($deps) == 0 ? true : $deps;
 	}
 
 	public function getId() {
-		return "IPFS::{$this->api}#{$this->baseDir}";
+		return "IPFS::{$this->api}#{$this->root}";
 	}
 }

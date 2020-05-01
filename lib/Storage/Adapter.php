@@ -27,9 +27,9 @@ class Adapter extends AbstractAdapter {
 	/**
 	 * @param string $method GET, POST, PUT
 	 * @param string $url url of api to call
-	 * @param array $params
-	 * @param array $data
-	 * @return bool|string
+	 * @param array $params url parameters
+	 * @param array $data POST data
+	 * @return bool|string false or the body of the response
 	 */
 	private function callAPI(string $method, string $url, array $params = [], array $data = []) {
 		$curl = curl_init();
@@ -56,10 +56,12 @@ class Adapter extends AbstractAdapter {
 	}
 
 	/**
+	 * Creates a new directory on the IPFS node
+	 *
 	 * @param string $dirname location of new directory
 	 * @return bool success status
 	 */
-	private function mkdir($dirname) {
+	private function mkdir(string $dirname) {
 		$response = $this->callAPI('GET', '/files/mkdir', ['arg' => "/$dirname", 'parent' => true]);
 		return $response == '';
 	}

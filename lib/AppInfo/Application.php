@@ -1,7 +1,4 @@
 <?php
-/**
- * @author Carlo Meier <carlo.meier@mail.ch>
- */
 
 namespace OCA\Files_External_IPFS\AppInfo;
 
@@ -11,7 +8,10 @@ use OCA\Files_External\Lib\Config\IBackendProvider;
 use OCA\Files_External\Service\BackendService;
 
 /**
+ * Creates app and registers services
+ *
  * @package OCA\Files_External_IPFS\AppInfo
+ * @author V31L <veil@mail.ch>
  */
 class Application extends App implements IBackendProvider {
 

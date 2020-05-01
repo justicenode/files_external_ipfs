@@ -1,20 +1,27 @@
 <?xml version="1.0"?>
-<info xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-      xsi:noNamespaceSchemaLocation="https://apps.nextcloud.com/schema/apps/info.xsd">
+<info xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://apps.nextcloud.com/schema/apps/info.xsd">
     <id>files_external_ipfs</id>
-    <name>Files IPFS</name>
+    <name>IPFS for Nextcloud</name>
     <summary>IPFS Backend for file storage</summary>
-    <description><![CDATA[IPFS Backend for file storage]]></description>
+    <description>
+        IPFS Backend for file storage
+    </description>
+
     <version>0.1.0</version>
+    <licence>agpl</licence>
+    <namespace>Files_External_IPFS</namespace>
+    <author mail="veil@mail.ch" homepage="https://carlomeier.net">Ѵ∑1L</author>
+
     <types>
         <filesystem/>
     </types>
-    <licence>agpl</licence>
-    <author mail="veil@mail.ch" homepage="https://carlomeier.net">Ѵ∑1L</author>
-    <namespace>Files_External_IPFS</namespace>
     <category>files</category>
     <category>integration</category>
+
     <bugs>https://github.com/justicenode/files_external_ipfs/issues</bugs>
+    <website>https://github.com/justicenode/files_external_ipfs</website>
+    <repository>https://github.com/justicenode/files_external_ipfs.git</repository>
+    <screenshot>https://raw.githubusercontent.com/justicenode/files_external_ipfs/master/docs/img/Screen01.png</screenshot>
 
     <dependencies>
         <nextcloud min-version="15" max-version="18"/>

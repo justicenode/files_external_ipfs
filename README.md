@@ -2,7 +2,7 @@
 
 This app allows you to use IPFS as an external storage for Nextcloud.
 
-![Screenshot](./doc/img/Screen01.png)
+![Screenshot](docs/img/Screen01.png)
 
 _Place this app in **nextcloud/apps/**_
 
@@ -12,6 +12,6 @@ _Place this app in **nextcloud/apps/**_
 - has some problems writing files some related to the timestamp issue
 
 ## Documentation
-- **[Getting Started](./doc/README.md)**
-- [Changelog](./doc/Changelog.md)
+- **[Getting Started](docs/README.md)**
+- [Changelog](CHANGELOG.md)
 
