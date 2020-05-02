@@ -34,6 +34,7 @@ class IPFS extends Flysystem {
 
 	/**
 	 * Check for dependencies (as of now none)
+	 *
 	 * @return array|bool array of missing dependencies or true
 	 */
 	public static function checkDependencies() {

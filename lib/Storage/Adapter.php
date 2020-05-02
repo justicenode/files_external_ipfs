@@ -13,36 +13,45 @@ use League\Flysystem\Config;
 class Adapter extends AbstractAdapter {
 	private $host;
 
+	/**
+	 * @var array
+	 */
+	private $permissions = [
+		'file' => [
+			'public' => 0644,
+			'private' => 0600,
+		],
+		'dir' => [
+			'public' => 0755,
+			'private' => 0700,
+		],
+	];
+
 	public function __construct(string $host, string $root) {
 		$this->host = $host;
 
 		// Ensure the existence of the root directory
 		$root = ltrim($root, '/');
-		if(!$this->has($root)) {
-			if(!$this->mkdir($root))
-				throw new \Exception('root directory didnt exist and couldnt be created');
+		if (!$this->has($root)) {
+			if (!$this->mkdir($root))
+				throw new \Exception('root directory didn\'t exist and couldn\'t be created');
 		}
 	}
 
 	/**
-	 * @param string $method GET, POST, PUT
+	 * Used to call a IPFS api
+	 *
 	 * @param string $url url of api to call
 	 * @param array $params url parameters
 	 * @param array $data POST data
 	 * @return bool|string false or the body of the response
 	 */
-	private function callAPI(string $method, string $url, array $params = [], array $data = []) {
+	private function callAPI(string $url, array $params = [], array $data = []) {
 		$curl = curl_init();
 
-		switch ($method) {
-			case "POST":
-				curl_setopt($curl, CURLOPT_POST, 1);
-				curl_setopt($curl, CURLOPT_POSTFIELDS, $data);
-				break;
-			case "PUT":
-				curl_setopt($curl, CURLOPT_PUT, 1);
-				break;
-		}
+		curl_setopt($curl, CURLOPT_POST, 1);
+		curl_setopt($curl, CURLOPT_POSTFIELDS, $data);
+
 		if (!empty($params)) $url = sprintf("%s?%s", $url, http_build_query($params));
 
 		curl_setopt($curl, CURLOPT_URL, "{$this->host}{$url}");
@@ -62,11 +71,13 @@ class Adapter extends AbstractAdapter {
 	 * @return bool success status
 	 */
 	private function mkdir(string $dirname) {
-		$response = $this->callAPI('GET', '/files/mkdir', ['arg' => "/$dirname", 'parent' => true]);
-		return $response == '';
+		$response = $this->callAPI('/files/mkdir', ['arg' => "/$dirname", 'parent' => true]);
+		return $response == ''; // return true if the directory was created, false if not
 	}
 
 	/**
+	 * Normalizes file info so that Flysystem/Nextcloud knows whats up
+	 *
 	 * @param array $entry entry from IPFS api
 	 * @param bool|string $root (optional) root if its for a directory
 	 * @return array normalized file data
@@ -75,38 +86,46 @@ class Adapter extends AbstractAdapter {
 		return [
 			'type' => $root ? ($entry['Type'] == 0 ? 'dir' : 'file') : ($entry['Type'] == 'file' ? 'file' : 'dir'),
 			'path' => $root ? ltrim("{$root}/{$entry['Name']}", '/') : $entry['Name'],
-			'timestamp' => time(),
+			'timestamp' => isset($entry['Mtime']) ? $entry['Mtime'] : time(),
 			'size' => $entry['Size'],
 		];
 	}
 
 	/**
 	 * Uploads a file to IPFS
+	 *
 	 * @param string $path the destination path of the file
 	 * @param string $contents the file contents to be uploaded
+	 * @param Config $config
 	 * @param bool $append if true it appends the content instead of replacing it
 	 * @return array|bool metadata of false if the operation failed
 	 */
-	private function upload(string $path, string $contents, $append = false) {
-		$args = ['arg' => "/{$path}", 'create' => true];
+	private function upload(string $path, string $contents, Config $config ,$append = false) {
+		$args = ['arg' => "/{$path}", 'create' => true, 'mode' => $this->permissions['file']['public']];
+
 		if ($append) {
 			$meta = $this->getMetadata($path);
 			$args['offset'] = $meta['size'];
-		} else {
-			$args['truncate'] = true;
-		}
-		$response = $this->callAPI('POST', '/files/write', $args, ['data' => $contents]);
-		if ($response != '') return false;
+		} else $args['truncate'] = true;
+
+		if (in_array($config->get('visibility'), ['public', 'private']))
+			$args['mode'] = $this->permissions['file'][$config->get('visibility')];
+
+		$response = $this->callAPI('/files/write', $args, ['data' => $contents]);
+
+		if ($response != '') return false; // On error return false
+
 		return $this->getMetadata($path);
 	}
 
 	/**
 	 * downloads a file via the IPFS API
+	 *
 	 * @param string $path path of the file
 	 * @return bool|string returns contents of files or false if it failed
 	 */
 	private function download(string $path) {
-		return $this->callAPI('GET', '/files/read', ['arg' => "/$path"]);
+		return $this->callAPI('/files/read', ['arg' => "/$path"]);
 	}
 
 	/**
@@ -137,7 +156,7 @@ class Adapter extends AbstractAdapter {
 	 */
 	public function listContents($directory = '', $recursive = false) {
 		$result = [];
-		$response = json_decode($this->callAPI('GET', '/files/ls', ['arg' => "/$directory"]), true);
+		$response = json_decode($this->callAPI('/files/ls', ['arg' => "/$directory"]), true);
 		foreach ($response['Entries'] as $e) $result[] = $this->normalizeFile($e, $directory);
 		return $result;
 	}
@@ -146,7 +165,7 @@ class Adapter extends AbstractAdapter {
 	 * {@inheritdoc}
 	 */
 	public function getMetadata($path) {
-		$response = json_decode($this->callAPI('GET', '/files/stat', ['arg' => "/$path"]), true);
+		$response = json_decode($this->callAPI('/files/stat', ['arg' => "/$path"]), true);
 		if (isset($response['Message'])) return false;
 		$response['Name'] = $path;
 		return $this->normalizeFile($response);
@@ -178,28 +197,28 @@ class Adapter extends AbstractAdapter {
 	 * {@inheritdoc}
 	 */
 	public function write($path, $contents, Config $config) {
-		return $this->upload($path, $contents);
+		return $this->upload($path, $contents, $config);
 	}
 
 	/**
 	 * {@inheritdoc}
 	 */
 	public function writeStream($path, $resource, Config $config) {
-		return $this->upload($path, stream_get_contents($resource));
+		return $this->upload($path, stream_get_contents($resource), $config);
 	}
 
 	/**
 	 * {@inheritdoc}
 	 */
 	public function update($path, $contents, Config $config) {
-		return $this->upload($path, $contents, true);
+		return $this->upload($path, $contents, $config, true);
 	}
 
 	/**
 	 * {@inheritdoc}
 	 */
 	public function updateStream($path, $resource, Config $config) {
-		return $this->upload($path, stream_get_contents($resource), true);
+		return $this->upload($path, stream_get_contents($resource), $config, true);
 	}
 
 	/**
@@ -207,7 +226,7 @@ class Adapter extends AbstractAdapter {
 	 */
 	public function rename($path, $newpath) {
 		$args = '?arg=' . urlencode("/{$path}") . '&arg=' . urlencode("/{$newpath}");
-		$response = $this->callAPI('GET', '/files/mv' . $args);
+		$response = $this->callAPI('/files/mv' . $args);
 		return $response == '';
 	}
 
@@ -216,7 +235,7 @@ class Adapter extends AbstractAdapter {
 	 */
 	public function copy($path, $newpath) {
 		$args = '?arg=' . urlencode("/{$path}") . '&arg=' . urlencode("/{$newpath}");
-		$response = $this->callAPI('GET', '/files/cp' . $args);
+		$response = $this->callAPI('/files/cp' . $args);
 		return $response == '';
 	}
 
@@ -224,7 +243,7 @@ class Adapter extends AbstractAdapter {
 	 * {@inheritdoc}
 	 */
 	public function delete($path) {
-		$response = $this->callAPI('GET', '/files/rm', ['arg' => "/$path"]);
+		$response = $this->callAPI('/files/rm', ['arg' => "/$path"]);
 		return $response == '';
 	}
 
@@ -243,6 +262,7 @@ class Adapter extends AbstractAdapter {
 	}
 
 	public function setVisibility($path, $visibility) {
-		//TODO
+		$mode = $this->permissions[$this->getMetadata($path)['type']][$visibility];
+		$this->callAPI('/files/chmod', ['arg' => $path, 'mode' => $mode]);
 	}
 }
