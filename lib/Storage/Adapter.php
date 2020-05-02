@@ -46,11 +46,12 @@ class Adapter extends AbstractAdapter {
 	 * @param array $data POST data
 	 * @return bool|string false or the body of the response
 	 */
-	private function callAPI(string $url, array $params = [], array $data = []) {
+	private function callAPI(string $url, array $params = [], MultipartData $data = null) {
 		$curl = curl_init();
 
 		curl_setopt($curl, CURLOPT_POST, 1);
-		curl_setopt($curl, CURLOPT_POSTFIELDS, $data);
+
+		if (!empty($data)) $data->apply($curl);
 
 		if (!empty($params)) $url = sprintf("%s?%s", $url, http_build_query($params));
 
@@ -58,7 +59,6 @@ class Adapter extends AbstractAdapter {
 		curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
 
 		$result = curl_exec($curl);
-
 		curl_close($curl);
 
 		return $result;
@@ -88,6 +88,7 @@ class Adapter extends AbstractAdapter {
 			'path' => $root ? ltrim("{$root}/{$entry['Name']}", '/') : $entry['Name'],
 			'timestamp' => isset($entry['Mtime']) ? $entry['Mtime'] : time(),
 			'size' => $entry['Size'],
+			'visibility' => isset($entry['Mode']) && substr($entry['Mode'], 2) != '00' ? 'public' : 'private',
 		];
 	}
 
@@ -101,17 +102,16 @@ class Adapter extends AbstractAdapter {
 	 * @return array|bool metadata of false if the operation failed
 	 */
 	private function upload(string $path, string $contents, Config $config ,$append = false) {
-		$args = ['arg' => "/{$path}", 'create' => true, 'mode' => $this->permissions['file']['public']];
+		$args = ['arg' => "/{$path}", 'create' => 'true'];
 
 		if ($append) {
 			$meta = $this->getMetadata($path);
 			$args['offset'] = $meta['size'];
-		} else $args['truncate'] = true;
+		} else $args['truncate'] = 'true';
 
-		if (in_array($config->get('visibility'), ['public', 'private']))
-			$args['mode'] = $this->permissions['file'][$config->get('visibility')];
+		$mode = in_array($config->get('visibility'), ['public', 'private']) ? $this->permissions['file'][$config->get('visibility')] : $this->permissions['file']['public'];
 
-		$response = $this->callAPI('/files/write', $args, ['data' => $contents]);
+		$response = $this->callAPI('/files/write', $args, new MultipartData($contents, $path, $mode));
 
 		if ($response != '') return false; // On error return false
 
@@ -190,7 +190,7 @@ class Adapter extends AbstractAdapter {
 	}
 
 	public function getVisibility($path) {
-		//TODO
+		return $this->getMetadata($path);
 	}
 
 	/**
@@ -263,6 +263,6 @@ class Adapter extends AbstractAdapter {
 
 	public function setVisibility($path, $visibility) {
 		$mode = $this->permissions[$this->getMetadata($path)['type']][$visibility];
-		$this->callAPI('/files/chmod', ['arg' => $path, 'mode' => $mode]);
+		$this->callAPI('/files/chmod', ['arg' => $path, 'mode' => sprintf('%o', $mode)]);
 	}
 }
