@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" height="256" width="256" viewBox="0 0 256 256">
+    <!-- Nextcloud part -->
+    <mask id="mask">
+        <!-- remove the right half -->
+        <rect fill="#fff" x="0" width="128" height="256" y="0"/>
+    </mask>
+    <g stroke-width="22" stroke="#fff" fill="none" mask="url(#mask)">
+        <!-- the two circles -->
+        <circle cx="40" cy="128" r="26"/>
+        <circle cx="128" cy="128" r="46"/>
+    </g>
+    <!-- IPFS part -->
+    <mask id="ipfs">
+        <rect fill="#fff" x="128" width="128" height="256" y="0"/>
+    </mask>
+    <g mask="url(#ipfs)">
+        <path fill="none" stroke="#fff" stroke-width="10" d="M128 5 L251 64 L251 192 L128 256 L128 128 L251 64 Z"/>
+    </g>
+</svg>

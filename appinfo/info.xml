@@ -7,7 +7,7 @@
         IPFS Backend for file storage
     </description>
 
-    <version>0.1.0</version>
+    <version>0.2.0</version>
     <licence>agpl</licence>
     <namespace>Files_External_IPFS</namespace>
     <author mail="veil@mail.ch" homepage="https://carlomeier.net">Ѵ∑1L</author>

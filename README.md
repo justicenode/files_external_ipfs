@@ -12,4 +12,4 @@ _Place this app in **nextcloud/apps/**_
 
 ## Notes
 - unless you create a private IPFS swarm all files will be public *[How to](https://github.com/ahester57/ipfs-private-swarm)*
-- `js-ipfs` <= `v0.40` and `go-ipfs` dont have write support
+- `js-ipfs` <= `v0.40` and `go-ipfs` will not have write support

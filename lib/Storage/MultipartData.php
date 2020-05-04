@@ -50,17 +50,10 @@ class MultipartData {
 		$this->data .= "--" . $this->delimiter . "--\r\n";
 
 		// Add data to curl request
-		curl_setopt($curl, CURLOPT_HTTPHEADER, $this->getHeaders());
-		curl_setopt($curl, CURLOPT_POSTFIELDS, $this->data);
-	}
-
-	/**
-	 * @return string[]
-	 */
-	private function getHeaders() {
-		return [
+		curl_setopt($curl, CURLOPT_HTTPHEADER, [
 			"Content-Type: multipart/form-data; boundary={$this->delimiter}",
 			'Content-Length: ' . strlen($this->data)
-		];
+		]);
+		curl_setopt($curl, CURLOPT_POSTFIELDS, $this->data);
 	}
 }
